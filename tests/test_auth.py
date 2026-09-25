@@ -9,7 +9,13 @@ import jwt
 import pytest
 from fastapi import HTTPException
 
-from home_core.auth import ALGO, decode_session_token, encode_session_token, hash_password, verify_password
+from home_core.auth import (
+    ALGO,
+    decode_session_token,
+    encode_session_token,
+    hash_password,
+    verify_password,
+)
 
 _SECRET = "test-secret-key-0123456789abcdef"
 _TTL = timedelta(days=7)
