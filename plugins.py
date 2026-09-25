@@ -2,8 +2,8 @@
 
 A plugin package names its class under a group in its pyproject:
 
-    [project.entry-points."dida.adapters"]
-    mqtt = "dida_adapter_mqtt:MqttAdapter"
+    [project.entry-points."baba.backends"]
+    onnxruntime = "baba_backend_onnxruntime:ONNXRuntimeBackend"
 
 Every installed plugin is loaded and asked `is_available()`, so a missing
 dependency disables that one plugin instead of stopping discovery.
