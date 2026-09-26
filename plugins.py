@@ -48,7 +48,7 @@ class Plugins[T]:
                 try:
                     cls = ep.load()
                 except Exception as exc:
-                    log.warning("Failed to load %s %r: %s", self.kind, ep.name, exc)
+                    log.warning("Failed to load %s %r: %s", self.kind, ep.name, exc, exc_info=True)
                     continue
                 if not (isinstance(cls, type) and self._accepts(cls)):
                     log.warning("Entry point %r is not a %s", ep.name, self.kind)
@@ -66,7 +66,9 @@ class Plugins[T]:
         try:
             return bool(cls.is_available())  # type: ignore[attr-defined]
         except Exception as exc:
-            log.warning("%s %r is_available() raised: %s — marking unavailable", self.kind, name, exc)
+            log.warning(
+                "%s %r is_available() raised: %s — marking unavailable", self.kind, name, exc, exc_info=True
+            )
             return False
 
     def names(self, only_available: bool = False) -> list[str]:
