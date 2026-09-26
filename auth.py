@@ -136,6 +136,22 @@ class SessionCookie:
         response.delete_cookie(self.name, path="/")
 
 
+def _write_bootstrap_secret(state_dir: Path, username: str, password: str) -> Path:
+    state_dir.mkdir(parents=True, exist_ok=True)
+    secret_file = state_dir / "bootstrap_admin_password"
+    tmp = secret_file.with_suffix(".tmp")
+    tmp.write_text(
+        f"{password}\n"
+        f"# Bootstrap admin password for user {username!r}.\n"
+        f"# Log in, change the password from /account, then delete this file.\n"
+    )
+    # A network share may refuse chmod; the file is still better than a log line.
+    with contextlib.suppress(OSError):
+        tmp.chmod(0o600)
+    tmp.replace(secret_file)
+    return secret_file
+
+
 async def bootstrap_admin_if_empty(pool: asyncpg.Pool, state_dir: Path, *, env_prefix: str) -> None:
     """With no users at all, create the admin named by `<prefix>_ADMIN_USERNAME`
     with `<prefix>_ADMIN_PASSWORD`. A generated password is never logged: it is
@@ -156,18 +172,7 @@ async def bootstrap_admin_if_empty(pool: asyncpg.Pool, state_dir: Path, *, env_p
     if not generated:
         log.info("Bootstrap admin created from env. username=%s", username)
         return
-    state_dir.mkdir(parents=True, exist_ok=True)
-    secret_file = state_dir / "bootstrap_admin_password"
-    tmp = secret_file.with_suffix(".tmp")
-    tmp.write_text(
-        f"{password}\n"
-        f"# Bootstrap admin password for user {username!r}.\n"
-        f"# Log in, change the password from /account, then delete this file.\n"
-    )
-    # A network share may refuse chmod; the file is still better than a log line.
-    with contextlib.suppress(OSError):
-        tmp.chmod(0o600)
-    tmp.replace(secret_file)
+    secret_file = await asyncio.to_thread(_write_bootstrap_secret, state_dir, username, password)
     log.warning(
         "Bootstrap admin %r created with a generated password. Read it from %s "
         "(mode 0600), log in, change it from /account, then delete that file. "
