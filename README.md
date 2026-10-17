@@ -32,9 +32,18 @@ the product and is passed in.
   (`encode_session_token` / `decode_session_token`), `SessionCookie` (HttpOnly,
   Lax, Secure over HTTPS), `bootstrap_admin_if_empty`
 
-`rate_limit` and `auth` are for a product's api and need what it already
-carries: FastAPI, argon2-cffi, PyJWT and asyncpg. The rest is the standard
-library.
+- `llm` — the language-model providers (Anthropic, OpenAI) over raw HTTP: the
+  live model list with the capabilities each model reports, so a product's
+  `Role` is offered only models that can do its job; `ping`, `text_json`,
+  `vision_json`; `failure_text`, the one sentence a failed call is shown as;
+  `claude_options`, how each Claude model is asked to think or not (the Models
+  API does not say how to turn thinking off); `AiSettings` over the product's
+  `ai_settings` table, the key sealed with the product's own encryption; and
+  `ai_router`, the REST the kit's AI cards talk to
+
+`rate_limit`, `auth` and `llm` are for a product's api and need what it already
+carries: FastAPI, argon2-cffi, PyJWT, asyncpg and httpx. The rest is the
+standard library.
 
 ## How a product consumes it
 
